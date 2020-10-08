@@ -1,0 +1,5 @@
+# Setup production libraries first
+-r prod.txt
+
+pytest
+pytest-flask
