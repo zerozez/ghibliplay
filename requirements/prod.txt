@@ -1,1 +1,7 @@
+SQLAlchemy
+
 flask
+flask-sqlalchemy
+flask-caching
+
+requests

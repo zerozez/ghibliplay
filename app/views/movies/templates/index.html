@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Ghibli Movie List</title>
+
+        <style type="text/css" media="screen">
+            .movie {
+                display: flex;
+                border-bottom-style: solid;
+                border-width: 2px;
+            }
+
+            .column {
+                flex: 50%;
+            }
+        </style>
+    </head>
+    <body>
+        {% for movie, cast in movies.items() %}
+            <div class="movie">
+                <div class="movie-name, column">
+                    <p><b>{{movie}}</b></p>
+                </div>
+                <div class="movie-cast, column">
+                    {% if none in cast %}
+                        <p><b>No People Cast Information</b></p>
+                    {% else%}
+                        {% for name in cast %}
+                            <p>{{name}}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </body>
+</html>
