@@ -9,11 +9,7 @@ from app import blueprints
 from app.extensions import db, cache, data_models
 
 
-PRODUCTION_ENV = 'production'
-DEVELOPMENT_ENV = 'development'
-
-
-def create_app(running_type=DEVELOPMENT_ENV):
+def create_app():
     """GhibliPlay flask application factory. Uses for initialize data models,
     register blueprints and apply right configuration for current execution.
 
@@ -27,10 +23,11 @@ def create_app(running_type=DEVELOPMENT_ENV):
     """
 
     app = Flask(__name__)
+    running_type = app.config['ENV']
 
-    if running_type == DEVELOPMENT_ENV:
+    if running_type == 'development':
         app.config.from_object('app.config.General')
-    elif running_type == PRODUCTION_ENV:
+    elif running_type == 'production':
         app.config.from_object('app.config.Production')
     else:
         raise ValueError("Invalid input running type")
