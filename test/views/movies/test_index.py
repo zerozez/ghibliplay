@@ -1,6 +1,6 @@
 import pytest
 
-from app.views.movies.index import get_fimls, get_people, get_cast
+from app.views.movies.index import get_fimls, get_cast
 
 from app.tools.requests import InvalidResponse
 
@@ -44,53 +44,44 @@ def test_get_films(httpserver):
     assert "No data" in str(exinfo.value)
 
 
-def test_get_people(httpserver):
-    json = [{
-        "id": "123",
-        "name": "test1",
-        "films": [
-            f"{httpserver.url_for('/films')}/12c98v-123v123v",
-            f"{httpserver.url_for('/films')}/d1vm23-3v12m9u1"
-        ]
-    }]
-    resp_json = [{
-        "id": "123",
-        "name": "test1",
-        "films": [
-            "12c98v-123v123v",
-            "d1vm23-3v12m9u1"
-        ]
-    }]
-
-    httpserver.expect_request(
-        "/people"
-    ).respond_with_json(json, status=200)
-
-    resp = get_people(httpserver.url_for(""))
-    assert resp == resp_json
-
-
-def test_get_cast():
-    people = [
+def test_get_cast(httpserver):
+    json = [
         {
             "id": "23-c0912m3c",
             "name": "v1",
             "films": [
-                "12c0m912-39m",
-                "12938cm12-123"
+                f"{httpserver.url_for('/films')}/12c0m912-39m",
+                f"{httpserver.url_for('/films')}/12938cm12-123"
             ]
         },
         {
             "id": "2dfdf3c",
             "name": "v2",
             "films": [
-                "12938cm12-123"
+                f"{httpserver.url_for('/films')}/12938cm12-123"
             ]
         }
     ]
 
-    assert len(get_cast(people, "12938cm12-123")) == 2
-    assert len(get_cast(people, "12c0m912-39m")) == 1
-    assert len(get_cast(people, "59685bm-234")) == 0
-    assert len(get_cast(people, "")) == 0
-    assert len(get_cast([], "59685bm-234")) == 0
+    resp_cast = {
+        "films": {
+            "12938cm12-123": set([
+                "23-c0912m3c",
+                "2dfdf3c"
+            ]),
+            "12c0m912-39m": set([
+                "23-c0912m3c"
+            ]),
+        },
+        "people": {
+            "23-c0912m3c": "v1",
+            "2dfdf3c": "v2"
+        }
+    }
+
+    httpserver.expect_request(
+        "/people"
+    ).respond_with_json(json, status=200)
+
+    resp = get_cast(httpserver.url_for(""))
+    assert resp == resp_cast

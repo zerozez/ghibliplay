@@ -105,16 +105,23 @@ def get_fimls(url):
     return data.json()
 
 
-def get_people(url):
-    """get_people gathers information about people from 3d-party API and
-    returns it as a json object.
+def get_cast(url):
+    """get_cast gathers information about people and their films from
+    3d-party API and returns it as a complex dictionary with them separated.
 
     Parameters:
         url (text) -- API Base URL
 
     Returns:
-        Json object with gathered data. Every object contains next fields:
-            id, name and films as a unique identificators (uuid4 standard)
+        Dictionary object with gathered data which has two keys: "people"
+        and "films".
+
+        "films" is a dict with film IDs as keys and list of people IDs who
+        played in them
+
+        "people" is a dict with more wide information about people itself,
+        where people ID uses as a key and name as a value
+
         If something goes wrong with the request InvalidResponse exception will
         be raised.
     """
@@ -125,37 +132,19 @@ def get_people(url):
         raise InvalidResponse(data.status_code)
 
     # Converting data's film url in film id
-    out = []
+    films = defaultdict(set)
+    people = dict()
     for r in data.json():
-        films = []
-
         for film in r["films"]:
             pos = film.find(substr) + len(substr)
-            films.append(film[pos:])
+            films[film[pos:]].add(r["id"])
 
-        r["films"] = films
-        out.append(r)
+        people[r["id"]] = r["name"]
 
-    return out
-
-
-def get_cast(people, film):
-    """get_cast creates a list of all people in specific film
-
-    Parameters:
-        people (list) -- List of people(id, name, films)
-        film (str) -- Specific film id as a search parameter
-
-    Returns:
-        List of people who have records in casting in the film
-    """
-    data = []
-
-    for person in people:
-        if film in person['films']:
-            data.append(person)
-
-    return data
+    return {
+        "films": films,
+        "people": people,
+    }
 
 
 def update_films(url, base):
@@ -166,21 +155,22 @@ def update_films(url, base):
         url (str) -- API Base URL
 
     """
-    people = get_people(url)
+    cast = get_cast(url)
 
     # Gathering information about new films
     for film in base:
         r = Movie(film['id'], film['title'], int(film['release_date']))
         db.session.add(r)
 
-        cast = get_cast(people, r.id)
-        for member in cast:
+        for member_id in cast["films"][film['id']]:
+            name = cast["people"][member_id]
+
             # Update our Character list
-            if Character.query.filter_by(id=member['id']).first() is None:
-                m = Character(member['id'], member['name'])
+            if Character.query.filter_by(id=member_id).first() is None:
+                m = Character(member_id, name)
                 db.session.add(m)
 
-            c = Cast(r.id, member['id'])
+            c = Cast(r.id, member_id)
             db.session.add(c)
 
     db.session.commit()
