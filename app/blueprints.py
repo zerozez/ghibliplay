@@ -6,7 +6,7 @@ from flask import Blueprint
 
 
 # Movie blueprints
-movies = Blueprint('movies.index', 'app.views.movies.index',
+movies = Blueprint('movies', 'app.views.movies',
                    template_folder='templates', url_prefix='/movies')
 
 

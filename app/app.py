@@ -37,7 +37,7 @@ def create_app():
 
     for bp in blueprints.blueprints:
         import_module(bp.import_name)
-        app.register_blueprint(blueprints.movies)
+        app.register_blueprint(bp)
 
     db.init_app(app)
     db.create_all(app=app)
